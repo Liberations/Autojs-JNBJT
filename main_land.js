@@ -6,30 +6,32 @@ var SLEEP = 400; // 休眠（ms），一般不用动
 var MINS = 1.5; // 循环用时,五级水井一分半就刷完了。理论这个时间可以小于1（min）
 var DELAY = 3; // 循环延迟（s）
 var WARN = 3; // 提醒时间（s）
-var SIPMLE = false; /* 简单坐标模式，true代表开启，false代表关闭，
+var SIPMLE = false;
+/* 简单坐标模式，true代表开启，false代表关闭，
                        开启后可以通过简单坐标来代替实际坐标，坐标原点为雕像，举例:
                        雕像正下方的第一个井坐标为(0,-2)
                        雕像正左方的第一个井坐标为(-2,0) 
 					   横屏模式
                     */
-var PLAYING = true; /* 挂机模式，true代表开启，false代表关闭，
-                       关闭后每运行一次循环时都会自动返回桌面，此时您可以用手机干别的事情，
-                       直到提示循环的下一次执行，会自动打开江南百景图app。
-                       挂机模式仅建议1级井使用，因为5级井循环用时是一分半，基本干不了什么事。
-                    */
+var PLAYING = true;
+/* 挂机模式，true代表开启，false代表关闭，
+                      关闭后每运行一次循环时都会自动返回桌面，此时您可以用手机干别的事情，
+                      直到提示循环的下一次执行，会自动打开江南百景图app。
+                      挂机模式仅建议1级井使用，因为5级井循环用时是一分半，基本干不了什么事。
+                   */
 
-/*这里的点位记得换成自己屏幕的坐标x,y*/					
+/*这里的点位记得换成自己屏幕的坐标x,y*/
 var TASKS = [
-    [1826, 161], 
+    [1826, 161],
     [2091, 246],
     [1068, 145],
     [1279, 250],
     [1456, 351],
-	[1616, 506],
+    [1616, 506],
     [1880, 559],
     [860, 260],
     [1284, 444],
-    [1651, 634], 
+    [1651, 634],
     [848, 456],
     [1275, 650],
     [1459, 756],
@@ -40,7 +42,7 @@ var TASKS = [
     [457, 653],
     [659, 760],
     [855, 856],
-	[1059, 960],
+    [1059, 960],
 ];
 
 
@@ -75,19 +77,20 @@ function work(flag) {
     reBack();
 }
 
-var lst = [];//找到的点位集合
-var foundAll = false;//记录是否12张图片都找到
+var lst = []; //找到的点位集合
+var foundAll = false; //记录是否12张图片都找到
 var errorCount = 0;
+
 function jigsaw(img) {
     errorCount = 0;
     foundAllPic(img)
-    if(!foundAll){
+    if (!foundAll) {
         toast("糟糕图片查找不全");
         sleep(1000)
         errorCount++;
-        if(errorCount>5){
+        if (errorCount > 5) {
             log("凉了不用再试了")
-			playMusic("./land/didi.mp3");
+            playMusic("./land/zhuzhu.mp3");
             return foundAll;
         }
         foundAllPic(img)
@@ -122,7 +125,7 @@ function jigsaw(img) {
     return foundAll;
 }
 
-function foundAllPic(img){
+function foundAllPic(img) {
     lst = [];
     for (var i = 1; i <= 12; i++) {
         var templ = images.read("./land/" + i + ".jpg");
@@ -132,7 +135,7 @@ function foundAllPic(img){
             threshold: 0.7
         });
         if (p) {
-            log("找到拼图"+i);
+            log("找到拼图" + i);
             var m = Math.round((p.x - BLOCKSTART[0]) / (HALFBLOCK * 2)) + 1;
             var n = Math.round((p.y - BLOCKSTART[1]) / (HALFBLOCK * 2));
             lst.push(m - 1 + n * 6);
@@ -140,7 +143,7 @@ function foundAllPic(img){
         templ.recycle();
     }
     log(lst);
-    foundAll=lst.length==12
+    foundAll = lst.length == 12
 }
 
 
@@ -163,18 +166,19 @@ function main(task) {
     }
 }
 
-function playMusic(path){
-	//播放音乐
-    media.playMusic(path,1,true);
+function playMusic(path) {
+    //播放音乐
+    media.playMusic(path, 1, true);
     //让音乐播放完
-    sleep(media.getMusicDuration()*3);
+    sleep(media.getMusicDuration() * 3);
+    media.stopMusic()
 }
-
 
 images.requestScreenCapture();
 launchApp("江南百景图");
 sleep(2000);
 main(TASKS);
+
 
 setInterval(function () {
     if (!PLAYING) {
@@ -189,12 +193,18 @@ setInterval(function () {
     templ.recycle();
     if (p) {
         log("发现拼图");
-		playMusic("./land/didi.mp3");
+        playMusic("./land/didi.mp3");
         jigsaw(screen_image);
     } else {
         screen_image.recycle();
     }
-
-    main(TASKS);
+    if(foundAll){
+        main(TASKS);
+    }else{
+        var clear = confirm("结束运行?");
+        if(clear){
+            engines.stopAll();
+        }
+    }
 }, MINS * 60 * 1000 + DELAY * 1000 - WARN * 1000 - SLEEP * 4)
 //}, 5 * 1000 + DELAY * 1000 - WARN * 1000 - SLEEP * 4)
