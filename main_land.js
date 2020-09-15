@@ -1,4 +1,5 @@
-var SIZE = [1080, 2248]; // 手机尺寸
+setScreenMetrics(2340, 1080); // 手机尺寸
+//var SIZE = [1080, 2248];
 var REBACK = [2213, 641]; // 无效点，地图上一个没有建筑的点，用于返回操作
 var BLOCKSTART = [810, 450]; // 拼图左上标
 var HALFBLOCK = 62; // 拼图边长的一半，一般不用动
